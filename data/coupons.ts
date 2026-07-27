@@ -191,6 +191,7 @@ export const coupons: CouponDefinition[] = [
     variant: "balloons",
     indicatorStyle: "stars",
     requiresWish: true,
+    requiresSecret: true,
   },
 ];
 

@@ -31,6 +31,13 @@ export function mergeCoupons(state: CouponBookState): Coupon[] {
   });
 }
 
+/** Coupons visible in the book (secret coupons wait for heart unlock). */
+export function visibleCoupons(state: CouponBookState): Coupon[] {
+  const merged = mergeCoupons(state);
+  if (state.secretDiscovered) return merged;
+  return merged.filter((coupon) => !coupon.requiresSecret);
+}
+
 export function getCouponById(
   state: CouponBookState,
   couponId: string,
@@ -62,6 +69,10 @@ export function redeemCoupon(
 
   if (definition.requiresWish && !note?.trim()) {
     return { state, error: "Please write your wish before redeeming." };
+  }
+
+  if (definition.requiresSecret && !state.secretDiscovered) {
+    return { state, error: "This coupon is still locked." };
   }
 
   const record: RedemptionRecord = {
@@ -114,7 +125,7 @@ export function undoLatestRedemption(
 }
 
 export function getProgressSummary(state: CouponBookState): CouponProgressSummary {
-  const merged = mergeCoupons(state);
+  const merged = visibleCoupons(state);
   const totalCoupons = merged.length;
   const totalAvailable = merged.reduce(
     (sum, coupon) => sum + coupon.maxRedemptions,

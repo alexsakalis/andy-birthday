@@ -11,8 +11,10 @@ import {
   MonchhichiBadge,
   PawPrint,
 } from "@/components/decor/CuteDecor";
+import { HeartConfetti } from "@/components/coupons/HeartConfetti";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
+import { useBirthdayCelebration } from "@/lib/hooks/use-birthday-celebration";
 import { usePrefersReducedMotion } from "@/lib/hooks/use-local-preference";
 
 type BirthdayWelcomeProps = {
@@ -26,6 +28,8 @@ export function BirthdayWelcome({
 }: BirthdayWelcomeProps) {
   const [opening, setOpening] = useState(false);
   const reduced = usePrefersReducedMotion();
+  const { active: confettiActive, onDone: onConfettiDone } =
+    useBirthdayCelebration();
 
   function handleOpen() {
     if (opening) return;
@@ -41,6 +45,7 @@ export function BirthdayWelcome({
   return (
     <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-5 py-10">
       <FloatingDecor />
+      <HeartConfetti active={confettiActive} onDone={onConfettiDone} />
 
       <motion.div
         className="relative z-10 mx-auto flex w-full max-w-lg flex-col items-center text-center"

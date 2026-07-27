@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { CouponBook } from "@/components/coupons/CouponBook";
+import { HeartConfetti } from "@/components/coupons/HeartConfetti";
 import { MonchhichiMascot } from "@/components/decor/CuteDecor";
 import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { siteConfig } from "@/config/site";
+import { useBirthdayCelebration } from "@/lib/hooks/use-birthday-celebration";
 import { useCouponBook } from "@/lib/hooks/use-coupon-book";
 import { BirthdayCountdown } from "@/components/birthday/BirthdayCountdown";
 import { BirthdayLetter } from "@/components/birthday/BirthdayLetter";
@@ -26,7 +28,6 @@ export function GiftExperience() {
     undo,
     resetAll,
     syncError,
-    remoteConfigured,
   } = useCouponBook();
 
   // Session-only override: after opening (or after reset), control welcome locally.
@@ -61,22 +62,65 @@ export function GiftExperience() {
   }
 
   return (
+    <GiftMainExperience
+      secretDiscovered={secretDiscovered}
+      musicEnabled={musicEnabled}
+      coupons={coupons}
+      progress={progress}
+      syncError={syncError}
+      setSecretDiscovered={setSecretDiscovered}
+      setMusicEnabled={setMusicEnabled}
+      redeem={redeem}
+      undo={undo}
+      onReset={async (password) => {
+        await resetAll(password);
+        setForceWelcome(true);
+      }}
+    />
+  );
+}
+
+type GiftMainExperienceProps = {
+  secretDiscovered: boolean;
+  musicEnabled: boolean;
+  coupons: ReturnType<typeof useCouponBook>["coupons"];
+  progress: ReturnType<typeof useCouponBook>["progress"];
+  syncError: string | null;
+  setSecretDiscovered: (discovered: boolean) => void;
+  setMusicEnabled: (enabled: boolean) => void;
+  redeem: ReturnType<typeof useCouponBook>["redeem"];
+  undo: ReturnType<typeof useCouponBook>["undo"];
+  onReset: (password: string) => Promise<void>;
+};
+
+function GiftMainExperience({
+  secretDiscovered,
+  musicEnabled,
+  coupons,
+  progress,
+  syncError,
+  setSecretDiscovered,
+  setMusicEnabled,
+  redeem,
+  undo,
+  onReset,
+}: GiftMainExperienceProps) {
+  const { active: confettiActive, onDone: onConfettiDone } =
+    useBirthdayCelebration();
+
+  return (
     <div className="relative pb-16">
+      <HeartConfetti active={confettiActive} onDone={onConfettiDone} />
+
       <header className="sticky top-0 z-40 border-b border-caramel/20 bg-cream/90 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <div className="hidden shrink-0 sm:block">
               <MonchhichiMascot size="sm" withBow className="!h-10 !w-10" />
             </div>
-            <div className="min-w-0">
-              <p className="font-display text-lg leading-tight text-warm-brown">
-                {siteConfig.recipientName}&apos;s Coupon Book
-              </p>
-              <p className="truncate text-xs text-caramel">
-                {siteConfig.themeName} · Happy {siteConfig.birthdayAge}th
-                {remoteConfigured ? " · Synced" : ""}
-              </p>
-            </div>
+            <p className="min-w-0 truncate font-display text-lg leading-tight text-warm-brown">
+              {siteConfig.recipientName}&apos;s Coupon Book
+            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <div className="hidden md:block">
@@ -85,10 +129,7 @@ export function GiftExperience() {
             <SettingsPanel
               musicEnabled={musicEnabled}
               onMusicToggle={setMusicEnabled}
-              onReset={async (password) => {
-                await resetAll(password);
-                setForceWelcome(true);
-              }}
+              onReset={onReset}
             />
           </div>
         </div>
@@ -117,11 +158,6 @@ export function GiftExperience() {
         secretDiscovered={secretDiscovered}
         onDiscoverSecret={() => setSecretDiscovered(true)}
       />
-
-      <footer className="mx-auto max-w-3xl px-5 pb-8 text-center text-xs text-muted-foreground">
-        Made with love for {siteConfig.recipientName} by {siteConfig.senderName}{" "}
-        · {siteConfig.themeName} · No prices, no accounts, just memories
-      </footer>
     </div>
   );
 }

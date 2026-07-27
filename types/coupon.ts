@@ -38,6 +38,8 @@ export type CouponDefinition = {
   indicatorStyle: IndicatorStyle;
   /** When true, redeeming requires a custom wish note. */
   requiresWish?: boolean;
+  /** When true, coupon stays hidden until the secret heart unlock. */
+  requiresSecret?: boolean;
 };
 
 /** Runtime coupon with merged redemption history. */

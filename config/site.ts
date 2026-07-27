@@ -28,7 +28,7 @@ export const siteConfig = {
   themeName: "Monchhichi Birthday Club",
 
   // EDIT HERE — Relationship start date (YYYY-MM-DD). Leave empty to hide days-together counter.
-  relationshipDate: "",
+  relationshipDate: "2018-06-13",
 
   // EDIT HERE — Personal birthday letter (shown after opening the gift)
   birthdayMessage: `Happy 25th birthday, Anndrea!
@@ -48,7 +48,7 @@ Alex`,
   // EDIT HERE — Secret message revealed after tapping the heart 5 times
   secretMessage: "One more secret coupon is waiting for you.",
   secretCouponHint:
-    "Hint: look for the Wildcard coupon called “Your Wish” — make it anything your heart wants.",
+    "Hint: scroll back up to the coupon book — a Wildcard called “Your Wish” is waiting for you.",
 
   // Optional music file path (place the file at public/music/birthday.mp3). Never autoplays.
   musicSrc: "/music/birthday.mp3",

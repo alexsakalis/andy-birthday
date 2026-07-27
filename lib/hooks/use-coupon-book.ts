@@ -16,9 +16,9 @@ import {
 } from "@/lib/coupon-api";
 import {
   getProgressSummary,
-  mergeCoupons,
   redeemCoupon,
   undoLatestRedemption,
+  visibleCoupons,
 } from "@/lib/coupon-service";
 import {
   couponStorage,
@@ -31,6 +31,9 @@ let memoryState: CouponBookState = defaultCouponBookState();
 let hydrated = false;
 let syncReady = false;
 const listeners = new Set<() => void>();
+
+/** Stable SSR snapshot — must be referentially equal across calls. */
+const SERVER_SNAPSHOT: CouponBookState = defaultCouponBookState();
 
 function emitChange() {
   listeners.forEach((listener) => listener());
@@ -58,7 +61,7 @@ function getSnapshot(): CouponBookState {
 }
 
 function getServerSnapshot(): CouponBookState {
-  return defaultCouponBookState();
+  return SERVER_SNAPSHOT;
 }
 
 function getHydratedSnapshot() {
@@ -159,7 +162,7 @@ export function useCouponBook() {
     };
   }, []);
 
-  const coupons: Coupon[] = useMemo(() => mergeCoupons(state), [state]);
+  const coupons: Coupon[] = useMemo(() => visibleCoupons(state), [state]);
   const progress = useMemo(() => getProgressSummary(state), [state]);
 
   const commit = useCallback(async (next: CouponBookState) => {

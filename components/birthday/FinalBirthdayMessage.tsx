@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { SecretMessage } from "@/components/birthday/SecretMessage";
-import { MonchhichiMascot } from "@/components/decor/CuteDecor";
+import { PettableMascot } from "@/components/decor/PettableMascot";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { usePrefersReducedMotion } from "@/lib/hooks/use-local-preference";
@@ -31,7 +31,7 @@ export function FinalBirthdayMessage({
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        <MonchhichiMascot size="md" mood="love" className="mb-4" />
+        <PettableMascot size="md" mood="love" className="mb-4" />
         <p className="text-sm font-semibold tracking-wide text-caramel uppercase">
           One last cozy note
         </p>

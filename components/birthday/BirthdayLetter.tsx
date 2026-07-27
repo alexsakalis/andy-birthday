@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { CuteBow, MonchhichiMascot, PawPrint } from "@/components/decor/CuteDecor";
+import { CuteBow, PawPrint } from "@/components/decor/CuteDecor";
+import { PettableMascot } from "@/components/decor/PettableMascot";
 import { siteConfig } from "@/config/site";
 import { loveReasons } from "@/data/love-reasons";
 import { useRandomIndex, usePrefersReducedMotion } from "@/lib/hooks/use-local-preference";
@@ -33,7 +34,7 @@ export function BirthdayLetter() {
         </div>
 
         <div className="mb-4 flex justify-center">
-          <MonchhichiMascot size="sm" mood="love" />
+          <PettableMascot size="sm" mood="love" />
         </div>
 
         <p className="mb-4 text-center text-sm font-semibold tracking-wide text-caramel uppercase">

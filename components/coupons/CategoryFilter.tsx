@@ -6,16 +6,22 @@ import { cn } from "@/lib/utils";
 type CategoryFilterProps = {
   value: string;
   onChange: (value: string) => void;
+  /** Categories to show. Defaults to the full couponCategories list. */
+  categories?: readonly string[];
 };
 
-export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
+export function CategoryFilter({
+  value,
+  onChange,
+  categories = couponCategories,
+}: CategoryFilterProps) {
   return (
     <div
       className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
       role="tablist"
       aria-label="Filter coupons by category"
     >
-      {couponCategories.map((category) => {
+      {categories.map((category) => {
         const selected = value === category;
         return (
           <button

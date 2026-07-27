@@ -15,6 +15,7 @@ import {
   getRemainingRedemptions,
   successMessage,
 } from "@/lib/coupon-service";
+import { couponCategories } from "@/data/coupons";
 import type { Coupon, CouponProgressSummary } from "@/types/coupon";
 
 type CouponBookProps = {
@@ -47,6 +48,19 @@ export function CouponBook({
     if (category === "All") return coupons;
     return coupons.filter((coupon) => coupon.category === category);
   }, [category, coupons]);
+
+  const availableCategories = useMemo(() => {
+    const present = new Set(coupons.map((coupon) => coupon.category));
+    return couponCategories.filter(
+      (cat) => cat === "All" || present.has(cat),
+    ) as readonly string[];
+  }, [coupons]);
+
+  useEffect(() => {
+    if (!availableCategories.includes(category)) {
+      setCategory("All");
+    }
+  }, [availableCategories, category]);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
@@ -133,7 +147,11 @@ export function CouponBook({
       <CouponProgress progress={progress} className="mb-6" />
 
       <div className="mb-5">
-        <CategoryFilter value={category} onChange={setCategory} />
+        <CategoryFilter
+          value={category}
+          onChange={setCategory}
+          categories={availableCategories}
+        />
       </div>
 
       {filtered.length === 0 ? (
