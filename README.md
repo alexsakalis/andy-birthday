@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Anndrea's Birthday Coupon Book
 
-## Getting Started
+A romantic, mobile-first digital coupon book for Anndrea's 25th birthday — made with love by Alex.
 
-First, run the development server:
+Built with Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, Lucide icons, Motion, Supabase, and localStorage cache.
+
+## Installation
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+Add your Supabase **service role** key to `.env.local` (see below).
+
+## Local development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run start
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase sync (required for cross-device saves)
 
-## Learn More
+Redemptions sync through Next.js API routes to Supabase so Anndrea’s progress follows her on any phone or browser.
 
-To learn more about Next.js, take a look at the following resources:
+1. Open your Supabase project → **Settings → API**
+2. Copy:
+   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+   - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (server only — never put this in client code)
+3. Put both in `.env.local` and in **Vercel → Project → Settings → Environment Variables**
+4. Redeploy / restart `npm run dev`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Optional: `COUPON_BOOK_ID` (defaults to `anndrea-birthday`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The table `coupon_book_state` is already created with RLS enabled (no public anon access). The browser never talks to Supabase directly.
 
-## Deploy on Vercel
+LocalStorage still caches the latest state for fast loads / offline fallback. If the database is empty and this device has local redemptions, they upload once automatically. If the database already has data, the database wins.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Birthday countdown
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Edit in [`config/site.ts`](config/site.ts):
+
+```ts
+birthdayDate: "2026-07-31",
+birthdayTimezone: "America/Toronto",
+countdownEnabled: true,
+```
+
+Counts down to midnight at the start of July 31 in that timezone. After the target, it shows a birthday-ready message instead of ticking numbers.
+
+## Monchhichi-inspired theme
+
+The site uses an **original cozy monkey-doll aesthetic** (soft fur browns, peach faces, rosy cheeks, pink bows, paw prints) — not official Monchhichi artwork.
+
+- Mascots & bows: [`components/decor/CuteDecor.tsx`](components/decor/CuteDecor.tsx)
+- Palette & plush textures: [`app/globals.css`](app/globals.css)
+- Theme tagline: `themeTagline` / `themeName` in [`config/site.ts`](config/site.ts)
+- Optional custom images later: [`public/theme/`](public/theme/)
+
+## How to change names
+
+Edit [`config/site.ts`](config/site.ts):
+
+```ts
+recipientName: "Anndrea",
+senderName: "Alex",
+birthdayAge: 25,
+welcomeTitle: "Happy 25th Birthday, Anndrea!",
+welcomeSubtitle: "A little book of love, surprises, and adventures from Alex.",
+```
+
+## How to edit birthday messages
+
+In [`config/site.ts`](config/site.ts):
+
+- `birthdayMessage` — letter after opening the gift
+- `finalHeading` / `finalMessage` — closing note
+- `secretMessage` / `secretCouponHint` — revealed after tapping the heart 5 times
+- `relationshipDate` — optional `YYYY-MM-DD` for the days-together counter
+
+“Reasons I love you” lines live in [`data/love-reasons.ts`](data/love-reasons.ts).
+
+## How to add or remove coupons
+
+Edit [`data/coupons.ts`](data/coupons.ts). Each coupon needs:
+
+- `id`, `couponNumber`, `title`, `description`, `category`
+- `icon` (see `components/coupons/CouponIcon.tsx` for supported names)
+- `maxRedemptions` (default `3`)
+- `variant`, `indicatorStyle`
+- `requiresWish: true` for the custom wish coupon
+
+## How to change the maximum redemption quantity
+
+Update `maxRedemptions` on each coupon in [`data/coupons.ts`](data/coupons.ts). Remaining uses are always calculated as:
+
+```ts
+maxRedemptions - redemptionHistory.length
+```
+
+They never go below 0 or above `maxRedemptions`.
+
+## Optional background music
+
+Place a file at `public/music/birthday.mp3`. Music **never autoplays** — Anndrea can enable it from the header / settings. If the file is missing, the control stays hidden.
+
+## Reset
+
+Reset everything from the discreet settings gear (requires confirmation). This clears Supabase and the local cache.
+
+## Deploy to Vercel
+
+1. Push this repo to GitHub / connect the Vercel project
+2. Add env vars:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+3. Deploy
+4. Share the private URL only with Anndrea
+
+## Project structure
+
+```text
+app/                      # App Router pages + API routes
+app/api/coupon-book/      # GET/PUT sync endpoints
+components/birthday/      # Welcome, countdown, letter, finale
+components/coupons/       # Coupon book + redemption flow
+config/site.ts            # Names, messages, countdown (EDIT HERE)
+data/coupons.ts           # Coupon definitions (EDIT HERE)
+lib/coupon-service.ts     # Pure redeem / undo / pluralize logic
+lib/coupon-storage.ts     # localStorage cache + sanitizers
+lib/coupon-repository.ts  # Supabase read/write
+lib/supabase/server.ts    # Service-role client
+supabase/migrations/      # SQL migrations
+```
