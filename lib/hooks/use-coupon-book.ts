@@ -8,6 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { siteConfig } from "@/config/site";
 import {
   fetchCouponBookState,
   persistCouponBookState,
@@ -233,26 +234,30 @@ export function useCouponBook() {
     [commit],
   );
 
-  const resetAll = useCallback(() => {
+  const resetAll = useCallback(async (password: string) => {
     const previous = memoryState;
-    const next = defaultCouponBookState();
-    setMemoryState(next, true);
-    couponStorage.reset();
     setSyncError(null);
 
-    void (async () => {
-      try {
-        if (syncReady) {
-          const saved = await resetCouponBookRemote();
-          setMemoryState(saved, true);
+    try {
+      if (syncReady) {
+        const saved = await resetCouponBookRemote(password);
+        couponStorage.reset();
+        setMemoryState(saved, true);
+      } else {
+        // Offline / unconfigured: still require the correct local password.
+        if (password !== siteConfig.resetPassword) {
+          throw new Error("Incorrect password.");
         }
-      } catch (error) {
-        setMemoryState(previous, true);
-        setSyncError(
-          error instanceof Error ? error.message : "Failed to reset.",
-        );
+        couponStorage.reset();
+        setMemoryState(defaultCouponBookState(), true);
       }
-    })();
+    } catch (error) {
+      setMemoryState(previous, true);
+      const message =
+        error instanceof Error ? error.message : "Failed to reset.";
+      setSyncError(message);
+      throw error instanceof Error ? error : new Error(message);
+    }
   }, []);
 
   return {

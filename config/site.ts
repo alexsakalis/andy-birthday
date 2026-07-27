@@ -56,6 +56,10 @@ Alex`,
   // Local storage key — bump version if you need a clean slate for all visitors
   storageKey: "anndrea-birthday-coupon-book-v1",
   storageVersion: 1,
+
+  // EDIT HERE — Password required to reset all coupon progress (Alex only)
+  // Can also be overridden on the server with env RESET_PASSWORD
+  resetPassword: "Alexisthebest123",
 } as const;
 
 export type SiteConfig = typeof siteConfig;

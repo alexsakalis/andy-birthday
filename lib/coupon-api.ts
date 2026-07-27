@@ -51,11 +51,13 @@ export async function persistCouponBookState(
   return sanitizeState(data.state ?? state);
 }
 
-export async function resetCouponBookRemote(): Promise<CouponBookState> {
+export async function resetCouponBookRemote(
+  password: string,
+): Promise<CouponBookState> {
   const response = await fetch("/api/coupon-book", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ reset: true }),
+    body: JSON.stringify({ reset: true, password }),
   });
 
   const data = (await response.json()) as ApiResponse;

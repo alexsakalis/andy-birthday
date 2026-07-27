@@ -114,7 +114,7 @@ Place a file at `public/music/birthday.mp3`. Music **never autoplays** — Anndr
 
 ## Reset
 
-Reset everything from the discreet settings gear (requires confirmation). This clears Supabase and the local cache.
+Reset is behind Alex’s password (default in [`config/site.ts`](config/site.ts) as `resetPassword`, overridable with env `RESET_PASSWORD`). From the settings gear, enter the password to erase Supabase + local cache.
 
 ## Deploy to Vercel
 

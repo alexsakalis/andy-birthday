@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { siteConfig } from "@/config/site";
 import {
   hasAnyRedemptions,
   loadCouponBookFromDb,
@@ -10,6 +11,10 @@ import { isSupabaseConfigured } from "@/lib/supabase/server";
 import type { CouponBookState } from "@/types/coupon";
 
 export const runtime = "nodejs";
+
+function getResetPassword() {
+  return process.env.RESET_PASSWORD?.trim() || siteConfig.resetPassword;
+}
 
 export async function GET() {
   try {
@@ -45,9 +50,16 @@ export async function PUT(request: Request) {
     const body = (await request.json()) as {
       state?: unknown;
       reset?: boolean;
+      password?: string;
     };
 
     if (body.reset) {
+      if (body.password !== getResetPassword()) {
+        return NextResponse.json(
+          { error: "Incorrect password." },
+          { status: 401 },
+        );
+      }
       const state = await resetCouponBookInDb();
       return NextResponse.json({ configured: true, state });
     }

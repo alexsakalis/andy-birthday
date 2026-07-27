@@ -12,11 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { siteConfig } from "@/config/site";
 
 type SettingsPanelProps = {
   musicEnabled: boolean;
   onMusicToggle: (enabled: boolean) => void;
-  onReset: () => void;
+  onReset: (password: string) => void | Promise<void>;
 };
 
 export function SettingsPanel({
@@ -26,11 +27,35 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   const [open, setOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  function handleReset() {
-    onReset();
-    setConfirmReset(false);
-    setOpen(false);
+  function closeAll(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setConfirmReset(false);
+      setPassword("");
+      setError(null);
+      setBusy(false);
+    }
+  }
+
+  async function handleReset() {
+    if (password !== siteConfig.resetPassword) {
+      setError("Incorrect password.");
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    try {
+      await onReset(password);
+      closeAll(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Reset failed.");
+      setBusy(false);
+    }
   }
 
   return (
@@ -49,15 +74,15 @@ export function SettingsPanel({
         </Button>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={closeAll}>
         <DialogContent className="max-w-md rounded-3xl border-caramel/30 bg-paper sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl text-warm-brown">
               Little settings
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Music never autoplays. Resetting erases all coupon history on this
-              device.
+              Music never autoplays. Resetting requires Alex&apos;s password and
+              erases all coupon history everywhere.
             </DialogDescription>
           </DialogHeader>
 
@@ -76,18 +101,45 @@ export function SettingsPanel({
             ) : (
               <div className="rounded-2xl border border-muted-red/30 bg-soft-pink/30 p-4">
                 <p className="text-sm font-semibold text-warm-brown">
-                  Are you sure?
+                  Password required
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  This will erase every redemption, wish, and progress saved on
-                  this device. This cannot be undone.
+                  This will erase every redemption, wish, and progress. Enter
+                  the reset password to continue.
                 </p>
+
+                <label className="mt-3 block">
+                  <span className="sr-only">Reset password</span>
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError(null);
+                    }}
+                    placeholder="Reset password"
+                    className="touch-target h-11 w-full rounded-full border border-caramel/40 bg-paper px-4 text-sm text-warm-brown outline-none ring-caramel/40 focus:ring-2"
+                  />
+                </label>
+
+                {error && (
+                  <p className="mt-2 text-sm font-semibold text-muted-red">
+                    {error}
+                  </p>
+                )}
+
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <Button
                     type="button"
                     variant="outline"
                     className="touch-target h-11 flex-1 rounded-full"
-                    onClick={() => setConfirmReset(false)}
+                    disabled={busy}
+                    onClick={() => {
+                      setConfirmReset(false);
+                      setPassword("");
+                      setError(null);
+                    }}
                   >
                     Never mind
                   </Button>
@@ -95,9 +147,10 @@ export function SettingsPanel({
                     type="button"
                     variant="destructive"
                     className="touch-target h-11 flex-1 rounded-full"
-                    onClick={handleReset}
+                    disabled={busy || !password}
+                    onClick={() => void handleReset()}
                   >
-                    Yes, erase everything
+                    {busy ? "Erasing…" : "Yes, erase everything"}
                   </Button>
                 </div>
               </div>

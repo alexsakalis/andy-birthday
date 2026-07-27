@@ -85,8 +85,8 @@ export function GiftExperience() {
             <SettingsPanel
               musicEnabled={musicEnabled}
               onMusicToggle={setMusicEnabled}
-              onReset={() => {
-                resetAll();
+              onReset={async (password) => {
+                await resetAll(password);
                 setForceWelcome(true);
               }}
             />
