@@ -21,7 +21,7 @@ export const siteConfig = {
   // EDIT HERE — Welcome screen
   welcomeTitle: "Happy 25th Birthday, Anndrea!",
   welcomeSubtitle:
-    "A little book of love, surprises, and adventures from Alex.",
+    "A sealed birthday card is waiting for you. Open it with your password when you're ready.",
 
   // EDIT HERE — Theme tagline (Monchhichi-inspired cozy vibe)
   themeTagline: "Cozy • Soft • Full of love",
@@ -57,8 +57,8 @@ Alex`,
   storageKey: "anndrea-birthday-coupon-book-v1",
   storageVersion: 1,
 
-  // EDIT HERE — Password required to reset all coupon progress (Alex only)
-  // Can also be overridden on the server with env RESET_PASSWORD
+  // EDIT HERE — Password to open the birthday card AND reset coupon progress
+  // Can also be overridden on the server with env RESET_PASSWORD (reset only)
   resetPassword: "Alexisthebest123",
 } as const;
 
