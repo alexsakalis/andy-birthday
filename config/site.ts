@@ -19,7 +19,7 @@ export const siteConfig = {
   countdownEnabled: true,
 
   // EDIT HERE — Welcome screen
-  welcomeTitle: "Happy 25th Birthday, Anndrea!",
+  welcomeTitle: "Happy 25th Birthday, Andy!",
   welcomeSubtitle:
     "A sealed birthday card is waiting for you. Open it with your password when you're ready.",
 
@@ -31,7 +31,7 @@ export const siteConfig = {
   relationshipDate: "2018-06-13",
 
   // EDIT HERE — Personal birthday letter (shown after opening the gift)
-  birthdayMessage: `Happy 25th birthday, Anndrea!
+  birthdayMessage: `Happy 25th birthday, My Baby Andy!
 
 I wanted to give you something that we could continue enjoying long after your birthday is over. I made this little coupon book for you so we can create more memories, enjoy more dates, and spend more time together.
 
