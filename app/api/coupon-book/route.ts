@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/site";
 import {
+  clearAlexNotifications,
+  ingestRedemptionEvents,
+  removeAlexNotifications,
+} from "@/lib/alex-notifications";
+import {
   hasAnyRedemptions,
   loadCouponBookFromDb,
   resetCouponBookInDb,
   saveCouponBookToDb,
 } from "@/lib/coupon-repository";
 import { defaultCouponBookState, sanitizeState } from "@/lib/coupon-storage";
+import { diffRedemptionEvents } from "@/lib/redemption-events";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import type { CouponBookState } from "@/types/coupon";
 
@@ -61,11 +67,30 @@ export async function PUT(request: Request) {
         );
       }
       const state = await resetCouponBookInDb();
+      try {
+        await clearAlexNotifications();
+      } catch (notifyError) {
+        console.error("Failed to clear Alex notifications on reset", notifyError);
+      }
       return NextResponse.json({ configured: true, state });
     }
 
+    const previous = await loadCouponBookFromDb();
     const state = sanitizeState(body.state) as CouponBookState;
     const saved = await saveCouponBookToDb(state);
+
+    try {
+      const { added, removedIds } = diffRedemptionEvents(previous, saved);
+      if (removedIds.length > 0) {
+        await removeAlexNotifications(removedIds);
+      }
+      if (added.length > 0) {
+        await ingestRedemptionEvents(added);
+      }
+    } catch (notifyError) {
+      console.error("Failed to sync Alex notifications", notifyError);
+    }
+
     return NextResponse.json({ configured: true, state: saved });
   } catch (error) {
     const message =

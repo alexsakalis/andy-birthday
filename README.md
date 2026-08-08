@@ -112,9 +112,28 @@ They never go below 0 or above `maxRedemptions`.
 
 Place a file at `public/music/birthday.mp3`. Music **never autoplays** — Anndrea can enable it from the header / settings. If the file is missing, the control stays hidden.
 
+## Alex dashboard + notifications
+
+Open **`/alex`** for a private login and live inbox of every coupon redemption (including wish text).
+
+1. Run the migration [`supabase/migrations/20260808000000_create_alex_notifications.sql`](supabase/migrations/20260808000000_create_alex_notifications.sql) in your Supabase SQL editor (or via the Supabase CLI).
+2. Sign in at `/alex/login` with Alex’s password (`ALEX_PASSWORD`, or the same `RESET_PASSWORD` / `resetPassword` used for resets).
+3. Keep the dashboard open — it polls every few seconds and highlights new redemptions.
+
+### Email alerts (optional)
+
+Add these env vars locally and in Vercel:
+
+- `RESEND_API_KEY` — from [Resend](https://resend.com)
+- `RESEND_FROM_EMAIL` — e.g. `Coupon Book <onboarding@resend.dev>` (or your verified domain)
+- `ALEX_NOTIFY_EMAIL` — where Alex should receive alerts
+- `NEXT_PUBLIC_SITE_URL` — production URL for the dashboard link in emails
+
+When Anndrea redeems a coupon, the API stores an inbox row and emails Alex (wish text included when present).
+
 ## Reset
 
-Reset is behind Alex’s password (default in [`config/site.ts`](config/site.ts) as `resetPassword`, overridable with env `RESET_PASSWORD`). From the settings gear, enter the password to erase Supabase + local cache.
+Reset is behind Alex’s password (default in [`config/site.ts`](config/site.ts) as `resetPassword`, overridable with env `RESET_PASSWORD`). From the settings gear, enter the password to erase Supabase + local cache. Resetting also clears the Alex inbox.
 
 ## Deploy to Vercel
 
@@ -129,14 +148,20 @@ Reset is behind Alex’s password (default in [`config/site.ts`](config/site.ts)
 
 ```text
 app/                      # App Router pages + API routes
+app/alex/                 # Alex login + live redemption dashboard
 app/api/coupon-book/      # GET/PUT sync endpoints
+app/api/alex/             # Alex auth + notification feed
+components/alex/          # Dashboard UI
 components/birthday/      # Welcome, countdown, letter, finale
 components/coupons/       # Coupon book + redemption flow
 config/site.ts            # Names, messages, countdown (EDIT HERE)
 data/coupons.ts           # Coupon definitions (EDIT HERE)
+lib/alex-auth.ts          # Cookie session for /alex
+lib/alex-notifications.ts # Inbox rows + email fan-out
 lib/coupon-service.ts     # Pure redeem / undo / pluralize logic
 lib/coupon-storage.ts     # localStorage cache + sanitizers
 lib/coupon-repository.ts  # Supabase read/write
 lib/supabase/server.ts    # Service-role client
+proxy.ts                  # Protects /alex routes
 supabase/migrations/      # SQL migrations
 ```
