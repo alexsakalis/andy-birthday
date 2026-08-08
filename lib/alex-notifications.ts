@@ -4,6 +4,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/server";
 import { sendRedemptionEmail } from "@/lib/email";
+import { sendPushForRedemption } from "@/lib/push";
 import {
   flattenRedemptions,
   type RedemptionEvent,
@@ -133,7 +134,7 @@ export async function syncNotificationsFromState(
   }
 }
 
-/** Insert new redemption alerts and email Alex (best-effort). */
+/** Insert new redemption alerts, then push + email Alex (best-effort). */
 export async function ingestRedemptionEvents(
   events: RedemptionEvent[],
 ): Promise<void> {
@@ -149,6 +150,17 @@ export async function ingestRedemptionEvents(
   const supabase = getSupabaseAdmin();
 
   for (const event of events) {
+    try {
+      const pushResult = await sendPushForRedemption(event);
+      if (pushResult.sent > 0) {
+        console.info(
+          `Push sent for ${event.id} to ${pushResult.sent} device(s)`,
+        );
+      }
+    } catch (error) {
+      console.error("Failed to send push notification", error);
+    }
+
     const result = await sendRedemptionEmail(event);
     if (!result.sent) {
       if (result.error) {

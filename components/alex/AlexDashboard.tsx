@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, LogOut, Mail, RefreshCw, Sparkles } from "lucide-react";
+import { AlexPushManager } from "@/components/alex/AlexPushManager";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import type { AlexNotification } from "@/types/notification";
@@ -235,7 +236,9 @@ export function AlexDashboard() {
         </div>
       </header>
 
-      <section className="mt-8 grid gap-3 sm:grid-cols-3">
+      <AlexPushManager />
+
+      <section className="mt-6 grid gap-3 sm:grid-cols-3">
         <Stat
           icon={<Bell className="size-4" />}
           label="Unread"
@@ -255,11 +258,8 @@ export function AlexDashboard() {
 
       {!emailConfigured && (
         <p className="mt-4 rounded-2xl bg-beige/70 px-4 py-3 text-sm text-warm-brown">
-          Email alerts are off until you set{" "}
-          <code className="text-xs">RESEND_API_KEY</code>,{" "}
-          <code className="text-xs">RESEND_FROM_EMAIL</code>, and{" "}
-          <code className="text-xs">ALEX_NOTIFY_EMAIL</code>. The live inbox
-          still works.
+          Optional email alerts are off until you set Resend env vars. Phone
+          push does not need email — enable it in the section above.
         </p>
       )}
 

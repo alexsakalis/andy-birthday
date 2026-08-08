@@ -112,24 +112,40 @@ They never go below 0 or above `maxRedemptions`.
 
 Place a file at `public/music/birthday.mp3`. Music **never autoplays** — Anndrea can enable it from the header / settings. If the file is missing, the control stays hidden.
 
-## Alex dashboard + notifications
+## Alex dashboard + phone push notifications
 
-Open **`/alex`** for a private login and live inbox of every coupon redemption (including wish text).
+Open **`/alex`** for a private login, live inbox, and **real phone push alerts** (including wish text).
 
-1. Run the migration [`supabase/migrations/20260808000000_create_alex_notifications.sql`](supabase/migrations/20260808000000_create_alex_notifications.sql) in your Supabase SQL editor (or via the Supabase CLI).
-2. Sign in at `/alex/login` with Alex’s password (`ALEX_PASSWORD`, or the same `RESET_PASSWORD` / `resetPassword` used for resets).
-3. Keep the dashboard open — it polls every few seconds and highlights new redemptions.
+1. Run both migrations in Supabase:
+   - [`supabase/migrations/20260808000000_create_alex_notifications.sql`](supabase/migrations/20260808000000_create_alex_notifications.sql)
+   - [`supabase/migrations/20260808001000_create_alex_push_subscriptions.sql`](supabase/migrations/20260808001000_create_alex_push_subscriptions.sql)
+2. Generate VAPID keys and add them to `.env.local` / Vercel:
 
-### Email alerts (optional)
+```bash
+npx web-push generate-vapid-keys
+```
 
-Add these env vars locally and in Vercel:
+```env
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+```
+
+3. Redeploy, then sign in at `/alex/login`.
+4. On your phone, tap **Enable push on this phone** (and allow notifications).
+5. Tap **Send test push** to confirm your lock screen buzzes.
+
+**iPhone note:** Web Push only works after **Add to Home Screen**, then opening the app from the home-screen icon (iOS 16.4+). A normal Safari tab is not enough.
+
+**Android:** Chrome works in a normal tab or installed PWA — just allow notifications.
+
+### Email alerts (optional extra)
+
+Push does **not** require Resend. If you also want email:
 
 - `RESEND_API_KEY` — from [Resend](https://resend.com)
-- `RESEND_FROM_EMAIL` — e.g. `Coupon Book <onboarding@resend.dev>` (or your verified domain)
-- `ALEX_NOTIFY_EMAIL` — where Alex should receive alerts
-- `NEXT_PUBLIC_SITE_URL` — production URL for the dashboard link in emails
-
-When Anndrea redeems a coupon, the API stores an inbox row and emails Alex (wish text included when present).
+- `RESEND_FROM_EMAIL` — e.g. `Coupon Book <onboarding@resend.dev>`
+- `ALEX_NOTIFY_EMAIL` — where Alex should receive email alerts
+- `NEXT_PUBLIC_SITE_URL` — production URL for dashboard links in emails
 
 ## Reset
 
@@ -141,8 +157,9 @@ Reset is behind Alex’s password (default in [`config/site.ts`](config/site.ts)
 2. Add env vars:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (for Alex phone push)
 3. Deploy
-4. Share the private URL only with Anndrea
+4. Share the main site URL only with Anndrea; keep `/alex` for yourself
 
 ## Project structure
 
@@ -157,11 +174,13 @@ components/coupons/       # Coupon book + redemption flow
 config/site.ts            # Names, messages, countdown (EDIT HERE)
 data/coupons.ts           # Coupon definitions (EDIT HERE)
 lib/alex-auth.ts          # Cookie session for /alex
-lib/alex-notifications.ts # Inbox rows + email fan-out
+lib/alex-notifications.ts # Inbox rows + push/email fan-out
+lib/push.ts               # Web Push subscribe + send
 lib/coupon-service.ts     # Pure redeem / undo / pluralize logic
 lib/coupon-storage.ts     # localStorage cache + sanitizers
 lib/coupon-repository.ts  # Supabase read/write
 lib/supabase/server.ts    # Service-role client
+public/sw.js              # Service worker for push display
 proxy.ts                  # Protects /alex routes
 supabase/migrations/      # SQL migrations
 ```
